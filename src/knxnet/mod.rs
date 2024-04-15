@@ -15,7 +15,7 @@ use byteorder::{ByteOrder, BigEndian};
 use crate::knxnet::connect::{ConnectRequest, ConnectResponse};
 use crate::knxnet::connectionstate::{ConnectionstateRequest, ConnectionstateResponse};
 use crate::knxnet::disconnect::{DisconnectRequest, DisconnectResponse};
-use crate::knxnet::tunnel::{TunnelRequest, TunnelResponse};
+use crate::knxnet::tunnel::{TunnelRequest, TunnelAck};
 
 const HEADER_LENGTH: u8 = 0x06;
 const KNXNET_VERSION: u8 = 0x10;
@@ -67,7 +67,7 @@ pub enum Service {
     DisconnectRequest(DisconnectRequest) = 0x0209,
     DisconnectResponse(DisconnectResponse) = 0x020A,
     TunnelRequest(TunnelRequest) = 0x0420,
-    TunnelResponse(TunnelResponse) = 0x0421,
+    TunnelAck(TunnelAck) = 0x0421,
     DeviceConfigurationRequest = 0x0310,
     DeviceConfigurationAck = 0x0311,
     RoutingIndication = 0x0530,
