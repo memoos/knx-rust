@@ -53,18 +53,20 @@ impl ConnectRequest {
 
 impl ConnectResponse {
     pub(crate) fn payload_length(&self)->u16 {
-        return 2 + HPAI::length() + self.connection_type.length();
+        return 2 + if self.status == StatusCode::NoError {HPAI::length() + self.connection_type.length()} else {0};
     }
 
     pub(crate) fn encode(&self, buf: &mut Vec<u8>){
         buf.push(self.channel);
         buf.push(self.status as u8);
-        self.data.encode(buf);
-        self.connection_type.encode(buf);
+        if self.status == StatusCode::NoError {
+            self.data.encode(buf);
+            self.connection_type.encode(buf);
+        }
     }
 
     pub(crate) fn decode(&mut self, buf: &[u8]) -> Result<(), KnxNetIpError> {
-        if buf.len() < 2 + HPAI::length() as usize{
+        if buf.len() < 2{
             return Err(KnxNetIpError::MessageTooShort(buf.len()))
         }
         self.channel = buf[0];
@@ -72,8 +74,14 @@ impl ConnectResponse {
             Some(status) => status,
             None => return Err(KnxNetIpError::UnknownStatus(buf[1]))
         };
-        self.data = HPAI::decode(&buf[2..10])?;
-        self.connection_type = ConnectionRespType::decode(&buf[10..buf.len()])?;
+
+        if self.status == StatusCode::NoError{
+            if buf.len() < 2 + HPAI::length() as usize{
+                return Err(KnxNetIpError::MessageTooShort(buf.len()))
+            }
+            self.data = HPAI::decode(&buf[2..10])?;
+            self.connection_type = ConnectionRespType::decode(&buf[10..buf.len()])?;
+        }
         return Ok(());
     }
 }

@@ -1,13 +1,14 @@
+use crate::cemi;
+use crate::cemi::Message;
+use crate::cemi::dpt::DPT;
 use crate::knxnet::{KnxNetIpError};
-use crate::knxnet::cemi::Message;
 use crate::knxnet::status::StatusCode;
 
-#[derive(Debug, PartialEq, Default)]
-pub(crate) struct TunnelRequest {
+#[derive(Debug, PartialEq,Default)]
+pub(crate) struct TunnelRequest<D: DPT+Default> {
     pub(crate) channel: u8,
     pub(crate) seq: u8,
-    pub(crate) message_code: Message,
-    pub(crate) payload: Vec<u8>,
+    pub(crate) data: cemi::Message<D>,
 }
 
 #[derive(Debug, PartialEq, Default)]
@@ -17,18 +18,17 @@ pub(crate) struct TunnelAck{
     pub(crate) status: StatusCode,
 }
 
-impl TunnelRequest {
+impl<D:DPT+Default> TunnelRequest<D> {
     pub(crate) fn payload_length(&self)->u16 {
-        return 6;
+        return (4 + self.data.length()) as u16;
     }
 
     pub(crate) fn encode(&self, buf: &mut Vec<u8>){
-        buf.push(0x6);
+        buf.push(0x4);
         buf.push(self.channel);
         buf.push(self.seq);
         buf.push(0x00); // reserved
-        buf.push(self.message_code as u8);
-        buf.push(0x00); // reserved
+        self.data.encode(buf);
     }
 
     pub(crate) fn decode(&mut self, buf: &[u8]) -> Result<(), KnxNetIpError> {
@@ -37,10 +37,7 @@ impl TunnelRequest {
         }
         self.channel = buf[1];
         self.seq = buf[2];
-        self.message_code = match Message::from_repr(buf[4]) {
-            Some(message) => message,
-            None => return Err(KnxNetIpError::Unknown)
-        };
+        self.data = Message::decode(&buf[4..buf.len()])?;
         return Ok(())
     }
 }
