@@ -26,6 +26,7 @@ impl<D: DPT+Default> Apdu<D> {
             Apdu::GroupValueWrite(dpt) | Apdu::GroupValueResponse(dpt) => {
                 return if dpt.bit_len() > 6 { (1 + dpt.bit_len() / 8) as u8 } else { 1 }
             }
+            Apdu::GroupValueRead => 1,
             _ => 0
         }
     }

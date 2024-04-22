@@ -1,5 +1,8 @@
+use strum_macros::FromRepr;
 use crate::cemi::dpt::DPT;
 
+#[derive(FromRepr, Debug, Copy, Clone, PartialEq)]
+#[repr(u16)]
 pub enum GroupEventType{
     GroupValueRead          = 0b0000_000000,
     GroupValueResponse      = 0b0001_000000,
@@ -7,8 +10,8 @@ pub enum GroupEventType{
 }
 
 pub struct GroupEvent<D: DPT> {
-    pub(crate) address: u16,
-    pub(crate) event_type: GroupEventType,
-    pub(crate) data: D,
+    pub address: u16,
+    pub event_type: GroupEventType,
+    pub data: D,
 }
 

@@ -274,6 +274,26 @@ mod tests {
                seq: 0,
                data: Apdu::GroupValueWrite(vec![0x03, 0xD4]),
            }) }).encoded(), vec![0x6, 0x10, 0x4, 0x20, 0x0, 0x17, 0x4, 0x11, 0, 0, 0x29, 0, 0xBC, 0xE0, 0x11, 0x1, 0, 0x0a, 0x3, 0x0, 0x80, 3, 0xD4]);
+        assert_eq!(Service::TunnelRequest(TunnelRequest{
+            channel:17,
+            seq: 0,
+            data: Message::LDataReq(vec![],LData{
+                frame_type: FrameType::Standard,
+                repetition: Repetition::NoRepeat,
+                system_broadcast: SystemBroadcast::Broadcast,
+                priority: Priority::Low,
+                acknowledge: Acknowledge::NoAcknowledge,
+                confirmation: Confirmation::NoError,
+                destination_address_type: AddressType::Group,
+                hop_count: 6,
+                frame_format: FrameFormat::Standard,
+                source: 0x0, // 1.1.1
+                destination: 10, // 0/10
+                control: false,
+                numbered: false,
+                seq: 0,
+                data: Apdu::<()>::GroupValueRead,
+            }) }).encoded(), vec![0x6, 0x10, 0x4, 0x20, 0x0, 0x15, 0x4, 0x11, 0, 0, 0x11, 0, 0xBC, 0xE0, 0x0, 0x0, 0, 0x0a, 0x1, 0x0, 0x0]);
         assert_eq!(Service::<()>::TunnelAck(TunnelAck{
             channel:17,
             seq: 141,
