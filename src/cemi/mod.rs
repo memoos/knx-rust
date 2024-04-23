@@ -1,7 +1,6 @@
 use strum_macros::FromRepr;
 use crate::cemi::dpt::DPT;
 
-pub(crate) mod address;
 pub(crate) mod l_data;
 mod information;
 pub mod apdu;
@@ -9,7 +8,7 @@ pub mod dpt;
 
 use crate::cemi::information::InformationType;
 use crate::cemi::l_data::LData;
-use crate::knxnet::{KnxNetIpError};
+use crate::knxnet::KnxNetIpError;
 
 
 #[derive(FromRepr, Debug, Clone, PartialEq, Default)]
@@ -118,7 +117,7 @@ mod tests {
     use crate::cemi::dpt::DPT;
     use crate::cemi::l_data::{Acknowledge, AddressType, Confirmation, FrameFormat, FrameType, LData, Priority, Repetition, SystemBroadcast};
     use crate::cemi::Message;
-    use crate::knxnet::connect::{ConnectRequest, ConnectResponse};
+    use crate::knxnet::connect::ConnectRequest;
     use crate::knxnet::Service;
 
     #[test]

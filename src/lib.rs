@@ -10,3 +10,4 @@ pub mod group_event;
 pub mod tunnel_connection;
 mod knxnet;
 mod cemi;
+pub mod address;
