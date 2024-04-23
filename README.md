@@ -14,4 +14,4 @@ Add `knx_rust` as a dependency in `Cargo.toml`:
 knx_rust = "0.0.1"
 ```
 
-An example how to interact with the library using mio (https://docs.rs/mio/latest/mio/) can be found in the example folder.
+An example how to interact with the library using mio (https://docs.rs/mio/latest/mio/) can be found in the [example](./example/group_tunnel.rs) folder.
