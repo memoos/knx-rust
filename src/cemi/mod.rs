@@ -1,10 +1,9 @@
 use strum_macros::FromRepr;
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 
 pub(crate) mod l_data;
 mod information;
 pub mod apdu;
-pub mod dpt;
 
 use crate::cemi::information::InformationType;
 use crate::cemi::l_data::LData;
@@ -114,7 +113,7 @@ impl<D:DPT+Default> Message<D> {
 #[cfg(test)]
 mod tests {
     use crate::cemi::apdu::Apdu;
-    use crate::cemi::dpt::DPT;
+    use crate::dpt::DPT;
     use crate::cemi::l_data::{Acknowledge, AddressType, Confirmation, FrameFormat, FrameType, LData, Priority, Repetition, SystemBroadcast};
     use crate::cemi::Message;
     use crate::knxnet::connect::ConnectRequest;

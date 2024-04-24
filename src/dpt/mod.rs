@@ -1,9 +1,19 @@
+mod float_16;
+mod unsigned_8;
+
+pub use crate::dpt::float_16::{*};
+pub use crate::dpt::unsigned_8::{*};
+
+use std::fmt::{Display, Formatter};
+use byteorder::{BigEndian, ByteOrder};
 use crate::knxnet::KnxNetIpError;
+
 
 pub trait DPT{
     fn encode(&self, buf: &mut Vec<u8>);
     fn decode(&mut self, buf: &[u8]) -> Result<(), KnxNetIpError> where Self: Sized;
     fn bit_len(&self) -> u16;
+    fn unit(&self) -> &str {""}
 }
 
 impl DPT for Vec<u8> {
@@ -53,3 +63,24 @@ impl DPT for () {
         return 0
     }
 }
+
+impl DPT for u16 {
+    fn encode(&self, buf: &mut Vec<u8>) {
+        buf.extend_from_slice(&self.to_be_bytes());
+    }
+
+    fn decode(&mut self, buf: &[u8]) -> Result<(), KnxNetIpError> where Self: Sized {
+        if buf.len() < 2 {
+            return Err(KnxNetIpError::MessageTooShort(buf.len()))
+        }
+        *self = BigEndian::read_u16(&buf[0..2]);
+        Ok(())
+    }
+
+    fn bit_len(&self) -> u16 {
+        16
+    }
+}
+
+
+

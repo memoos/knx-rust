@@ -15,7 +15,7 @@ use std::ops::Add;
 use std::time::{Duration, Instant};
 use strum_macros::FromRepr;
 use crate::cemi::apdu::Apdu;
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 use crate::cemi::l_data::LData;
 use crate::cemi::Message;
 use crate::group_event::{GroupEvent, GroupEventType};
@@ -239,6 +239,11 @@ impl TunnelConnection {
                 if con_res.status == StatusCode::NoError {
                     self.awaiting_heartbeat_response = false;
                     self.handle_outbount_send()
+                } else {
+                    self.awaiting_heartbeat_response = false;
+                    self.handle_outbount_send();
+                    self.state = TunnelConnectionState::Disconnected;
+                    self.send_connect_request();
                 }
                 None
             }
@@ -250,7 +255,7 @@ impl TunnelConnection {
             },
             Service::TunnelRequest(treq) => {
                 //only messages with the expected seq or one less should be accepted (and thereby acked). See 03/08/04 Tunneling 2.6
-                if !(self.inbound_seq == treq.seq || self.inbound_seq == treq.seq + 1) || self.channel != treq.channel{
+                if !(self.inbound_seq == treq.seq || self.inbound_seq == treq.seq.wrapping_add(1)) || self.channel != treq.channel{
                     return None
                 }
                 self.push_out_message(OutMessage{
@@ -263,7 +268,7 @@ impl TunnelConnection {
                     need_ack: false,
                     retried: 0,
                 });
-                self.inbound_seq = treq.seq + 1;
+                self.inbound_seq = treq.seq.wrapping_add(1);
 
                 match treq.data {
                     Message::LDataInd(i, d) => {

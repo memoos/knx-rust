@@ -5,7 +5,7 @@ use strum_macros::FromRepr;
 use crate::cemi::l_data::SystemBroadcast::Broadcast;
 use crate::cemi::Message;
 use crate::cemi::apdu::Apdu;
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 use crate::knxnet::{KnxNetIpError, Service};
 
 

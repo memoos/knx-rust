@@ -1,5 +1,5 @@
 use strum_macros::FromRepr;
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 use crate::knxnet::KnxNetIpError;
 
 #[derive(PartialEq, FromRepr, Debug, Clone, Default)]

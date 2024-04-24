@@ -5,6 +5,7 @@ use knx_rust;
 use knx_rust::address::GroupAddress2;
 use knx_rust::group_event::GroupEvent;
 use knx_rust::group_event::GroupEventType::{GroupValueRead};
+use knx_rust::dpt::{DptValueHumidity, DptValueTemp};
 
 use mio::net::{UdpSocket};
 
@@ -92,6 +93,10 @@ fn main() -> io::Result<()> {
                                 Some(event) => {
                                     let addr = GroupAddress2::from_u16(event.address);
                                     println!("Received {:?} on {} with value {:02X?}", event.event_type, addr, event.data);
+                                    // let's say we expect a temperature value at group 1/2
+                                    if addr.main() == 1 && addr.sub() == 2 {
+                                        println!("Received a temperature of {}", DptValueTemp::from_bytes(event.data.as_slice()).unwrap());
+                                    }
                                 }
                                 None => {}
                             }
@@ -119,12 +124,19 @@ fn main() -> io::Result<()> {
                 //handle send timer
                 SEND_TIMER => {
                     if knx_tunnel.connected() {
-                        println!("Sending group event");
-                        //request data from a group address
+                        println!("Sending group events");
+                        //request data from a group address 8/4
                         knx_tunnel.send(GroupEvent{
                             event_type: GroupValueRead,
                             address: GroupAddress2::new(8, 4).to_u16(),
                             data: vec![],
+                        });
+
+                        //send humidity 12.34% on group address 1/3
+                        knx_tunnel.send(GroupEvent{
+                            event_type: GroupValueWrite,
+                            address: GroupAddress2::new(1, 3).to_u16(),
+                            data: DptValueHumidity::from_f32(12.34),
                         });
                     }
                 }

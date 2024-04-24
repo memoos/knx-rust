@@ -11,7 +11,7 @@ use strum_macros::FromRepr;
 use thiserror::Error;
 use crate::knxnet::status::StatusCode;
 use byteorder::{ByteOrder, BigEndian};
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 use crate::knxnet::connect::{ConnectRequest, ConnectResponse};
 use crate::knxnet::connectionstate::{ConnectionstateRequest, ConnectionstateResponse};
 use crate::knxnet::disconnect::{DisconnectRequest, DisconnectResponse};

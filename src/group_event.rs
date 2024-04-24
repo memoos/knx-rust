@@ -1,5 +1,5 @@
 use strum_macros::FromRepr;
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 
 #[derive(FromRepr, Debug, Copy, Clone, PartialEq)]
 #[repr(u16)]

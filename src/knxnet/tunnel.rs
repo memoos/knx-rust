@@ -1,6 +1,6 @@
 use crate::cemi;
 use crate::cemi::Message;
-use crate::cemi::dpt::DPT;
+use crate::dpt::DPT;
 use crate::knxnet::{KnxNetIpError};
 use crate::knxnet::status::StatusCode;
 
