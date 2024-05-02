@@ -4,7 +4,7 @@ use std::time::Duration;
 use knx_rust;
 use knx_rust::address::GroupAddress2;
 use knx_rust::group_event::GroupEvent;
-use knx_rust::group_event::GroupEventType::{GroupValueRead};
+use knx_rust::group_event::GroupEventType::{GroupValueRead, GroupValueWrite};
 use knx_rust::dpt::{DptValueHumidity, DptValueTemp};
 
 use mio::net::{UdpSocket};
@@ -136,7 +136,7 @@ fn main() -> io::Result<()> {
                         knx_tunnel.send(GroupEvent{
                             event_type: GroupValueWrite,
                             address: GroupAddress2::new(1, 3).to_u16(),
-                            data: DptValueHumidity::from_f32(12.34),
+                            data: DptValueHumidity::from_float32(12.34),
                         });
                     }
                 }

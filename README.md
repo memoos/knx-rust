@@ -21,4 +21,13 @@ You need to make sure that the following functions called regularly (for exmaple
 
 Apart from that messages can be send to the bus at any time using `knx.send(group_event)`. 
 
-An example how to interact with the library using mio (https://docs.rs/mio/latest/mio/) can be found in the [example](./example/group_tunnel.rs) folder.
+An example how to interact with the library using [mio](https://docs.rs/mio/latest/mio/) or [tokio](https://tokio.rs/) can be found in the [examples](./examples/) folder.
+
+These examples can be executed using
+```
+cargo run --example group_tunnel_mio
+```
+or
+```
+cargo run --example group_tunnel_tokio
+```
