@@ -12,6 +12,9 @@ readme = "README.md"
 categories = ["network-programming", "encoding", "embedded"]
 keywords = ["KNX", "Network", "SmartHome", "protocol", "network"]
 license = "GNU LGPLv3"
+exclude = [
+    ".github",
+]
 
 [dependencies]
 byteorder = { version = "1.3.2", default-features = false }
