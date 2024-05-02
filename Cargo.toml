@@ -11,7 +11,7 @@ readme = "README.md"
 
 categories = ["network-programming", "encoding", "embedded"]
 keywords = ["KNX", "Network", "SmartHome", "protocol", "network"]
-license = "GNU LGPLv3"
+license = "LGPL-3.0-only"
 exclude = [
     ".github",
 ]
