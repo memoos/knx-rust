@@ -20,7 +20,7 @@ use tokio::sync::Mutex;
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> io::Result<()> {
 
-    let knx_addr: core::net::SocketAddr = "192.168.178.60:3671".parse().unwrap();
+    let knx_addr: core::net::SocketAddr = "192.168.1.10:3671".parse().unwrap();
     let mut socket = UdpSocket::bind("0.0.0.0:0").await.expect("couldn't bind to address");
     socket
         .connect(knx_addr)

@@ -1,5 +1,5 @@
 [package]
-name = "knx_rust"
+name = "knx-rust"
 version = "0.0.1"
 edition = "2021"
 authors = ["Melchior Moos <melchior.moos@gmail.com>"]

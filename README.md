@@ -1,17 +1,17 @@
-# knx_rust
+# knx-rust
 
-Knx rust is a library implementing the KNXNet/Ip protocol, to enable communication with KNX-Devices through
+Knx-rust is a library written in Rust implementing the KNXNet/Ip protocol, to enable communication with KNX-Devices through
 KNX Ip Gateways or Routers.
 The library is implemented without any io calls (https://sans-io.readthedocs.io/how-to-sans-io.html) to have minimal runtime requirements so that it could be used with tokio, async-std or 
 mio only in embedded environments.
 
 ## Usage
 
-Add `knx_rust` as a dependency in `Cargo.toml`:
+Add `knx-rust` as a dependency in `Cargo.toml`:
 
 ```toml
 [dependencies]
-knx_rust = "0.0.1"
+knx-rust = "0.0.1"
 ```
 
 You need to make sure that the following functions called regularly (for exmaple in your event loop):
