@@ -1,4 +1,3 @@
-use nom::number::complete::{be_u16, be_u8};
 use strum_macros::FromRepr;
 use crate::knxnet::KnxNetIpError;
 

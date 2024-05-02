@@ -35,8 +35,8 @@ pub struct TunnelConnectionConfig {
     heartbeat_interval: Duration,
 }
 
-impl TunnelConnectionConfig {
-    pub fn default() -> TunnelConnectionConfig {
+impl Default for TunnelConnectionConfig {
+    fn default() -> TunnelConnectionConfig {
         TunnelConnectionConfig{
             resent_interval: Duration::from_millis(1000),
             heartbeat_interval: Duration::from_secs(60),
@@ -46,21 +46,23 @@ impl TunnelConnectionConfig {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Default)]
 struct OutMessage {
     data: Vec<u8>,
     need_ack: bool,
     retried: u8,
 }
 
-#[derive(FromRepr, Debug, Copy, Clone, PartialEq)]
+#[derive(FromRepr, Debug, Copy, Clone, PartialEq, Default)]
 enum TunnelConnectionState {
+    #[default]
     Disconnected,
     Connecting,
     Connected,
     Disconnecting,
 }
 
-
+#[derive(Debug)]
 pub struct TunnelConnection {
     state: TunnelConnectionState,
     awaiting_heartbeat_response: bool,
@@ -69,13 +71,14 @@ pub struct TunnelConnection {
     outbound_seq: u8,
     inbound_seq: u8,
     out_queue: VecDeque<OutMessage>,
+    ack_queue: VecDeque<OutMessage>,
+    current_ack: Vec<u8>,
     message_pending: bool,
     next_resent: Instant,
     next_timeout: Instant,
     next_heartbeat: Instant,
     config: TunnelConnectionConfig,
 }
-
 
 impl TunnelConnection {
     /// Create an TunnelConnReq
@@ -94,8 +97,10 @@ impl TunnelConnection {
             outbound_seq: 0,
             inbound_seq: 0,
             out_queue: VecDeque::from(vec![]),
+            ack_queue: VecDeque::from(vec![]),
             host_info,
             message_pending: true,
+            current_ack: vec![],
         };
         con.send_connect_request();
         con
@@ -117,24 +122,19 @@ impl TunnelConnection {
     }
 
     pub fn get_outbound_data(&mut self) -> Option<&[u8]> {
-        loop {
-            if self.message_pending && !self.out_queue.is_empty() {
-                self.message_pending = false;
-                if self.out_queue[0].need_ack {
-                    self.next_resent = Instant::now().add(self.config.resent_interval);
-                } else {
-                    self.next_resent = Instant::now().add(self.config.response_timeout);
-                }
-                self.out_queue[0].retried += 1;
-                return Some(&self.out_queue[0].data)
-            } else {
-                if !self.message_pending && !self.out_queue.is_empty() && !self.out_queue[0].need_ack{
-                    self.remove_first_message();
-                    continue;
-                }
-                return None
-            }
+        if !self.ack_queue.is_empty(){
+            self.current_ack = self.ack_queue.pop_front().unwrap().data;
+            return Some(&self.current_ack)
         }
+        if self.message_pending && !self.out_queue.is_empty() {
+            self.message_pending = false;
+            self.next_resent = Instant::now().add(self.config.resent_interval);
+            self.out_queue[0].retried += 1;
+            //println!("Data {:?} to be send {}", &self.out_queue[0].data, self.out_queue[0].retried);
+            return Some(&self.out_queue[0].data)
+        }
+
+        return None
     }
 
     fn remove_first_message(&mut self){
@@ -188,7 +188,7 @@ impl TunnelConnection {
             }
             self.next_heartbeat += self.config.heartbeat_interval;
         }
-        if self.next_resent < Instant::now() && !self.out_queue.is_empty() && self.out_queue[0].need_ack {
+        if self.next_resent < Instant::now() && !self.out_queue.is_empty(){
             // set message back to due to send
             self.message_pending = true
         }
@@ -196,7 +196,7 @@ impl TunnelConnection {
 
     pub fn handle_inbound_message(&mut self, data: &[u8]) -> Option<GroupEvent::<Vec<u8>>> {
         let service = Service::<Vec<u8>>::decoded(data);
-        println!("inbound {:?}", service);
+        //println!("inbound {:?}", service);
         let service = match service {
             Ok(s) => s,
             Err(e) => return None
@@ -214,6 +214,7 @@ impl TunnelConnection {
                         retried: 0,
                     });
                     self.state = TunnelConnectionState::Disconnected;
+                    self.send_connect_request();
                 }
                 None
             },
@@ -256,6 +257,7 @@ impl TunnelConnection {
             Service::TunnelRequest(treq) => {
                 //only messages with the expected seq or one less should be accepted (and thereby acked). See 03/08/04 Tunneling 2.6
                 if !(self.inbound_seq == treq.seq || self.inbound_seq == treq.seq.wrapping_add(1)) || self.channel != treq.channel{
+                    println!("Discarding due to not matching seq {}, channel {}", self.inbound_seq, self.channel);
                     return None
                 }
                 self.push_out_message(OutMessage{
@@ -268,6 +270,7 @@ impl TunnelConnection {
                     need_ack: false,
                     retried: 0,
                 });
+                //println!("Outqueue size {}, pending {}", self.out_queue.len(), self.message_pending);
                 self.inbound_seq = treq.seq.wrapping_add(1);
 
                 match treq.data {
@@ -306,10 +309,15 @@ impl TunnelConnection {
     }
 
     fn push_out_message(&mut self, msg: OutMessage)  {
+        if !msg.need_ack {
+            return self.ack_queue.push_back(msg)
+        }
         if self.out_queue.is_empty() {
             self.message_pending = true;
             self.next_timeout = Instant::now().add(self.config.response_timeout)
         }
+
+        // take ack messages first
         self.out_queue.push_back(msg)
     }
 
@@ -336,6 +344,7 @@ impl TunnelConnection {
 
         let buf = tunnel_request.encoded();
         self.out_queue.clear();
+        self.ack_queue.clear();
         self.inbound_seq = 0;
         self.outbound_seq = 0;
         self.state = TunnelConnectionState::Connecting;

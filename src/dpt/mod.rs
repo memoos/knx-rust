@@ -42,6 +42,9 @@ impl DPT for bool {
     }
 
     fn decode(&mut self,buf: &[u8]) -> Result<(), KnxNetIpError> {
+        if buf.len() < 1 {
+            return Err(KnxNetIpError::MessageTooShort(buf.len()))
+        }
         *self = buf[0] & 0x1 > 0;
         return Ok(())
     }

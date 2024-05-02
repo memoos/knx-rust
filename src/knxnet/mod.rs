@@ -30,6 +30,8 @@ pub enum KnxNetIpError {
     UnknownStatus(u8),
     #[error("unknown connection type code {0}")]
     UnknownConnectionType(u8),
+    #[error("unknown protocol type code {0}")]
+    UnknownProtocol(u8),
     #[error("datagram was too short (len {0})")]
     MessageTooShort(usize),
     #[error("datagram header was too short (len {0})")]

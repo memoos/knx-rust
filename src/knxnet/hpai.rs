@@ -1,4 +1,4 @@
-use nom::number::complete::{be_u16, be_u8};
+use byteorder::{BigEndian, ByteOrder};
 use strum_macros::FromRepr;
 use crate::knxnet::KnxNetIpError;
 
@@ -16,24 +16,6 @@ pub struct HPAI {
     pub(crate) address: [u8;4],
     pub(crate) port: u16,
 }
-
-named!(parse_host_info<&[u8], HPAI>,
-    do_parse!(
-    _length: be_u8 >>
-    protocol: be_u8 >>
-    address1: be_u8 >>
-    address2: be_u8 >>
-    address3: be_u8 >>
-    address4: be_u8 >>
-    port: be_u16 >>
-
-    (HPAI{
-        port: port,
-        address: [address1, address2, address3, address4],
-        protocol: Protocol::from_repr(protocol).unwrap(),
-    })
-    )
-);
 
 impl HPAI {
     /// Create an TunnelConnReq
@@ -57,9 +39,16 @@ impl HPAI {
     }
 
     pub(crate) fn decode(buf: &[u8]) -> Result<HPAI, KnxNetIpError> {
-        match parse_host_info(&buf){
-            Ok(v) => Ok(v.1),
-            Err(e) => Err(KnxNetIpError::Unknown)
+        if buf.len() < 8 || buf[0] != 8{
+            return Err(KnxNetIpError::InvalidSize)
         }
+        Ok(HPAI{
+            protocol: match Protocol::from_repr(buf[1]) {
+                Some(t) => t,
+                None => return Err(KnxNetIpError::UnknownProtocol(buf[1]))
+            },
+            address: [buf[2],buf[3],buf[4],buf[5]],
+            port: BigEndian::read_u16(&buf[6..8])
+        })
     }
 }
